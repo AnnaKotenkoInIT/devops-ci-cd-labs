@@ -1,2 +1,7 @@
-# devops-ci-cd-labs
-Learning repository for DevOps and CI/CD course
+# Мій власний мікросервісний проєкт
+
+Репозиторій для навчального проєкту курсу DevOps CI/CD.
+
+## Мета
+
+Навчитися основам роботи з Git і GitHub.
