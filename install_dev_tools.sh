@@ -32,7 +32,7 @@ else
 
     sudo install -m 0755 -d /etc/apt/keyrings
 
-    sudo curl -fsSL https://download.docker.com/linux/$ID/gpg \
+    sudo curl -fsSL "https://download.docker.com/linux/$ID/gpg" \
         -o /etc/apt/keyrings/docker.asc
 
     sudo chmod a+r /etc/apt/keyrings/docker.asc
@@ -58,13 +58,11 @@ if docker compose version >/dev/null 2>&1; then
     docker compose version
 else
     echo "Installing Docker Compose..."
-
     sudo apt install -y docker-compose-plugin
-
     echo "Docker Compose installed successfully."
 fi
 
-# 3. Install Python
+# 3. Install Python 3.9 or newer
 if command -v python3 >/dev/null 2>&1; then
     if python3 -c 'import sys; exit(0 if sys.version_info >= (3,9) else 1)'; then
         echo "Python 3.9 or newer is already installed."
@@ -81,30 +79,40 @@ fi
 # Install pip and virtual environment support
 sudo apt install -y python3-pip python3-venv
 
-# 4. Install Django using pip
+# 4. Install Django using pip in a virtual environment
 VENV_DIR="$HOME/.venvs/dev-tools"
 
 if [ -x "$VENV_DIR/bin/python" ] && \
    "$VENV_DIR/bin/python" -c "import django" >/dev/null 2>&1; then
-
     echo "Django is already installed."
     "$VENV_DIR/bin/python" -m django --version
-
 else
     echo "Installing Django..."
 
     mkdir -p "$HOME/.venvs"
-
     python3 -m venv "$VENV_DIR"
 
     "$VENV_DIR/bin/python" -m pip install --upgrade pip
-
     "$VENV_DIR/bin/python" -m pip install django
 
     echo "Django installed successfully."
 fi
 
-# 5. Verify installations
+# 5. Add the current user to the docker group
+if ! getent group docker >/dev/null 2>&1; then
+    echo "Creating docker group..."
+    sudo groupadd docker
+fi
+
+if id -nG "$USER" | tr ' ' '\n' | grep -qx docker; then
+    echo "User $USER is already in the docker group."
+else
+    echo "Adding user $USER to the docker group..."
+    sudo usermod -aG docker "$USER"
+    echo "User added to the docker group. Restart your session for this change to take effect."
+fi
+
+# 6. Verify installations
 echo ""
 echo "========== Installation check =========="
 
